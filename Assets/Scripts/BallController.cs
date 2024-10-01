@@ -29,7 +29,7 @@ public class BallController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (isMoving)
+        if (isMoving && !hasHitBubble)
         {
             Vector3 velocity = shotDirection * shotSpeed;
             Vector3 displacement = velocity * Time.deltaTime;
@@ -82,6 +82,7 @@ public class BallController : MonoBehaviour
         }
         else if (collision.gameObject.CompareTag("Bubble") && hasHitBubble != true)
         {
+            hasHitBubble = true;
             SpringJoint2D joint = gameObject.AddComponent<SpringJoint2D>();
             joint.dampingRatio = 0.85f;
             joint.autoConfigureDistance = false;
@@ -91,7 +92,27 @@ public class BallController : MonoBehaviour
             {
                 SpringJoint2D bubbleJoint = collision.gameObject.GetComponent<SpringJoint2D>();
                 joint.connectedAnchor = bubbleJoint.connectedAnchor;
+                // todo: set active = false
+
+                Bubble destroyedBubble = collision.gameObject.GetComponent<Bubble>();
+                Bubble newBubble = gameObject.GetComponent<Bubble>();
+                newBubble.neighbours = destroyedBubble.neighbours;
+
+                destroyedBubble.DeclareRemoveToNeighbours();
                 Destroy(collision.gameObject);
+                
+                newBubble.DeclareToNeighbours();
+
+                Queue<Bubble> destroyQueue = new Queue<Bubble>();
+                destroyQueue.Enqueue(newBubble);
+                newBubble.GetDestroyQueue(ref destroyQueue);
+
+                if (destroyQueue.Count > 2)
+                {
+                    StartCoroutine(DestroySameBubbles(destroyQueue));
+                    //DestroySameBubbles(destroyQueue);
+                }
+                
             }
             else
             {
@@ -106,8 +127,22 @@ public class BallController : MonoBehaviour
                     joint.connectedAnchor = new Vector2(hitBubblePos.x + 0.5f, hitBubblePos.y);
                 }
             }
-            hasHitBubble = true;
-            this.enabled = false;
         }
+
+    }
+
+    public IEnumerator DestroySameBubbles(Queue<Bubble> destroyQueue)
+    {
+        yield return new WaitForSeconds(0.2f);
+        destroyQueue.Dequeue();
+        GetComponent<SpriteRenderer>().enabled = false;
+        yield return new WaitForSeconds(0.2f);
+
+        while (destroyQueue.Count > 0)
+        {
+            Destroy(destroyQueue.Dequeue().gameObject);
+            yield return new WaitForSeconds(0.2f);
+        }
+        Destroy(gameObject);
     }
 }
