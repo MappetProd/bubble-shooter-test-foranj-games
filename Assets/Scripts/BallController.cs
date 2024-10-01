@@ -18,6 +18,7 @@ public class BallController : MonoBehaviour
 
     private bool isHolding = false;
     private bool isMoving = false;
+    private bool hasHitBubble = false;
 
     // Start is called before the first frame update
     void Start()
@@ -75,11 +76,38 @@ public class BallController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        shotDirection = Vector2.Reflect(shotDirection, collision.contacts[0].normal);
-    }
+        if (collision.gameObject.CompareTag("Wall"))
+        {
+            shotDirection = Vector2.Reflect(shotDirection, collision.contacts[0].normal);
+        }
+        else if (collision.gameObject.CompareTag("Bubble") && hasHitBubble != true)
+        {
+            SpringJoint2D joint = gameObject.AddComponent<SpringJoint2D>();
+            joint.dampingRatio = 0.85f;
+            joint.autoConfigureDistance = false;
+            joint.distance = 0.05f;
 
-    private void OnMouseOver()
-    {
-        
+            if (shotPower == maxPowerDistance)
+            {
+                SpringJoint2D bubbleJoint = collision.gameObject.GetComponent<SpringJoint2D>();
+                joint.connectedAnchor = bubbleJoint.connectedAnchor;
+                Destroy(collision.gameObject);
+            }
+            else
+            {
+                ContactPoint2D point = collision.contacts[0];
+                Vector2 hitBubblePos = collision.gameObject.transform.position;
+                if (point.point.y < hitBubblePos.y)
+                {
+                    joint.connectedAnchor = new Vector2(hitBubblePos.x + 0.25f, hitBubblePos.y - 0.5f);
+                }
+                else
+                {
+                    joint.connectedAnchor = new Vector2(hitBubblePos.x + 0.5f, hitBubblePos.y);
+                }
+            }
+            hasHitBubble = true;
+            this.enabled = false;
+        }
     }
 }
