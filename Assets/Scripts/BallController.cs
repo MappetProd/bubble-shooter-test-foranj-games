@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -10,20 +11,30 @@ public class BallController : MonoBehaviour
 
     [SerializeField]
     private float maxBallSpeed = 5f;
-    private float shotSpeed = 0f;
 
-    private Vector3 startHoldMousePos = Vector3.zero;
-    private Vector2 shotDirection = Vector2.zero;
-    private float shotPower = 0f;
+    private float shotSpeed;
 
-    private bool isHolding = false;
-    private bool isMoving = false;
-    private bool hasHitBubble = false;
+    private Vector3 startHoldMousePos;
+    private Vector2 shotDirection;
+    private float shotPower;
 
-    // Start is called before the first frame update
-    void Start()
+    private bool isHolding;
+    private bool isMoving;
+    private bool hasHitBubble;
+
+    public static event Action onTurnFinished;
+
+    private void Awake()
     {
-        
+        shotSpeed = 0f;
+        shotPower = 0f;
+
+        startHoldMousePos = Vector3.zero;
+        shotDirection = Vector2.zero;
+
+        isHolding = false;
+        isMoving = false;
+        hasHitBubble = false;
     }
 
     // Update is called once per frame
@@ -97,6 +108,7 @@ public class BallController : MonoBehaviour
                 Bubble destroyedBubble = collision.gameObject.GetComponent<Bubble>();
                 Bubble newBubble = gameObject.GetComponent<Bubble>();
                 newBubble.neighbours = destroyedBubble.neighbours;
+                BubbleSpawner.instance.AddBubbleToField(newBubble);
 
                 destroyedBubble.DeclareRemoveToNeighbours();
                 Destroy(collision.gameObject);
@@ -104,8 +116,7 @@ public class BallController : MonoBehaviour
                 newBubble.DeclareToNeighbours();
 
                 Queue<Bubble> destroyQueue = new Queue<Bubble>();
-                destroyQueue.Enqueue(newBubble);
-                newBubble.GetDestroyQueue(ref destroyQueue);
+                newBubble.GetDestroyQueue(ref destroyQueue, newBubble.type);
 
                 if (destroyQueue.Count > 2)
                 {
@@ -127,6 +138,7 @@ public class BallController : MonoBehaviour
                     joint.connectedAnchor = new Vector2(hitBubblePos.x + 0.5f, hitBubblePos.y);
                 }
             }
+            onTurnFinished.Invoke();
         }
 
     }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Search;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class Bubble : MonoBehaviour
 {
@@ -20,7 +21,6 @@ public class Bubble : MonoBehaviour
 
     private SpriteRenderer sp;
 
-    // Start is called before the first frame update
     void Awake()
     {
         sp = GetComponent<SpriteRenderer>();
@@ -47,12 +47,6 @@ public class Bubble : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void InitNeighbours()
     {
         // TODO: remove hardcode (1f = 0.5f (bubble radius) * 2)
@@ -65,17 +59,21 @@ public class Bubble : MonoBehaviour
         gameObject.layer = 0;
     }
 
-    public Queue<Bubble> GetDestroyQueue(ref Queue<Bubble> destroyQueue)
+    public Queue<Bubble> GetDestroyQueue(ref Queue<Bubble> destroyQueue, BubbleType type)
     {
         isVisited = true;
-        foreach (Bubble neighbour in neighbours)
+        if (type == this.type)
         {
-            if (!neighbour.isVisited && neighbour.type == this.type)
+            destroyQueue.Enqueue(this);
+            foreach (Bubble neighbour in neighbours)
             {
-                destroyQueue.Enqueue(neighbour);
-                neighbour.GetDestroyQueue(ref destroyQueue);
+                if (!neighbour.isVisited)
+                {
+                    neighbour.GetDestroyQueue(ref destroyQueue, type);
+                }
             }
         }
+        
         return destroyQueue;
     }
 
@@ -93,6 +91,11 @@ public class Bubble : MonoBehaviour
         {
             neighbour.neighbours.Remove(this);
         }
+    }
+
+    public void ResetBFSFields()
+    {
+        isVisited = false;
     }
 
     //0_0
