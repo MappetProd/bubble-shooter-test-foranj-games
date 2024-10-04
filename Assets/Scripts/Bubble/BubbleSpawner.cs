@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class BubbleSpawner : MonoBehaviour
 {
@@ -48,7 +47,7 @@ public class BubbleSpawner : MonoBehaviour
         SpawnBubbles();
         InitBubblesNeighbours();
 
-        BallController.onTurnFinished += OnTurnFinished;
+        ShotHandler.ShotHandled += OnTurnFinished;
     }
 
     private void SetShootingBubblesPositions()
@@ -67,7 +66,8 @@ public class BubbleSpawner : MonoBehaviour
     private void SpawnShootingBubbles()
     {
         currShootingBubble = Instantiate(shootingBubblePrefab, currShootingBubblePos, Quaternion.identity);
-        nextShootingBubble = Instantiate(bubblePrefab, nextShootingBubblePos, Quaternion.identity);
+        nextShootingBubble = Instantiate(shootingBubblePrefab, nextShootingBubblePos, Quaternion.identity);
+        nextShootingBubble.GetComponent<PlayerInput>().enabled = false;
 
         //TODO: restructure prefabs
         Destroy(nextShootingBubble.GetComponent<SpringJoint2D>());
@@ -115,21 +115,6 @@ public class BubbleSpawner : MonoBehaviour
         }
     }
 
-    public IEnumerator DestroySameBubbles(Queue<Bubble> destroyQueue)
-    {
-        for (int i = 0; i < destroyQueue.Count; i++) 
-        {
-            Destroy(destroyQueue.Dequeue().gameObject);
-            yield return new WaitForSeconds(0.1f);
-        }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void AddBubbleToField(Bubble bubble)
     {
         bubble.transform.SetParent(field.transform);
@@ -148,9 +133,10 @@ public class BubbleSpawner : MonoBehaviour
     {
         currShootingBubble = nextShootingBubble;
         currShootingBubble.transform.position = currShootingBubblePos;
-        currShootingBubble.AddComponent<BallController>();
+        currShootingBubble.GetComponent<PlayerInput>().enabled = true;
 
-        nextShootingBubble = Instantiate(bubblePrefab, nextShootingBubblePos, Quaternion.identity);
+        nextShootingBubble = Instantiate(shootingBubblePrefab, nextShootingBubblePos, Quaternion.identity);
+        nextShootingBubble.GetComponent<PlayerInput>().enabled = false;
         Destroy(nextShootingBubble.GetComponent<SpringJoint2D>());
 
         BubbleServiceFieldsReset();

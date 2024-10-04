@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Search;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class Bubble : MonoBehaviour
 {
@@ -14,10 +12,11 @@ public class Bubble : MonoBehaviour
     }
 
     public List<Bubble> neighbours;
+    public BubbleType type;
     public bool isCore;
+
     public bool hasWayToCore;
     public bool isVisited;
-    public BubbleType type;
 
     private SpriteRenderer sp;
 
@@ -97,13 +96,4 @@ public class Bubble : MonoBehaviour
     {
         isVisited = false;
     }
-
-    //0_0
-    /*private void OnDestroy()
-    {
-        foreach (Bubble neighbour in neighbours)
-        {
-            neighbour.neighbours.Remove(this);
-        }
-    }*/
 }

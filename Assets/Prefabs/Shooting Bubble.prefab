@@ -11,9 +11,11 @@ GameObject:
   - component: {fileID: 975150522589597151}
   - component: {fileID: 975150522589597150}
   - component: {fileID: 975150522589597144}
-  - component: {fileID: 975150522589597145}
   - component: {fileID: 975150522589597146}
   - component: {fileID: 975150522589597147}
+  - component: {fileID: -5819566780007472158}
+  - component: {fileID: 4279458984207809315}
+  - component: {fileID: 9059275912617465390}
   m_Layer: 0
   m_Name: Shooting Bubble
   m_TagString: Untagged
@@ -104,20 +106,6 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
---- !u!114 &975150522589597145
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 975150522589597149}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f64b0475c580c4445a56c80b41408103, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxPowerDistance: 1
-  maxBallSpeed: 5
 --- !u!50 &975150522589597146
 Rigidbody2D:
   serializedVersion: 4
@@ -135,7 +123,7 @@ Rigidbody2D:
   m_AngularDrag: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
@@ -152,7 +140,47 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighbours: []
+  type: 0
   isCore: 0
   hasWayToCore: 0
   isVisited: 0
-  type: 0
+--- !u!114 &-5819566780007472158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975150522589597149}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31726973782e09e42b98022d90562f36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bubbleSpeed: 5
+--- !u!114 &4279458984207809315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975150522589597149}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a958454c86c13ec4d8848c6502a5c1b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxPullPower: 1
+  shotDirection: {x: 0, y: 0}
+  pullPower: 0
+--- !u!114 &9059275912617465390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975150522589597149}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07cfd900f9e62464386827632f5a32da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
