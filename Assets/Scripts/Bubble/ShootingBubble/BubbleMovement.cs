@@ -32,7 +32,7 @@ public class BubbleMovement : MonoBehaviour
     private void FixedUpdate()
     {
         Vector3 velocity = playerInput.shotDirection * bubbleSpeed * playerInput.pullPower;
-        Vector3 displacement = velocity * Time.deltaTime;
+        Vector3 displacement = velocity * Time.fixedDeltaTime;
         transform.position += displacement;
     }
 

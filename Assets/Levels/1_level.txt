@@ -20,16 +20,15 @@ random
 RED = 0.3
 GREEN = 0.35
 BLUE = 0.35
-VOID = 0
 
-endrandomqq
+endrandom
 
 level
 
 x x x x x x
  x x x x x 
   x x x x
- x x x x x
+ x x x - x
 x x x x x x
  x x x x x
   x x x x

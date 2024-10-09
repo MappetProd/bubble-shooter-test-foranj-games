@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Globalization;
@@ -12,26 +11,63 @@ public class Converter : MonoBehaviour
 {
     const string ENPTY_LINE_REGEX = @"^(?=\s*$)";
 
-    StreamReader reader;
+    private static Converter _instance;
 
-    List<char[]> level;
-    Dictionary<char, Bubble> charBubbleCodes;
-    Dictionary<Bubble, float> bubbleSpawnProbabilities;
-    Vector2 startPos;
-    
+    public static Converter Instance
+    {
+        get
+        {
+            if ( _instance == null)
+            {
+                _instance = new GameObject("TXTConverter").AddComponent<Converter>();
+            }
+            return _instance;
+        }
+    }
 
-    enum Bubble { RED, GREEN, BLUE, RANDOM, VOID }
+    public List<char[]> Level { get; private set; }
+    public Dictionary<char, BubbleColor> BubbletypeByCharcode { get; private set; }
+    public Dictionary<BubbleColor, float> ProbabilityByBubbletype { get; private set; }
+    public Vector2 StartSpawnPosition { get; private set; }
+
+    private StreamReader reader;
+    //public static event Action LevelConvertedFromTxt;
+    public static event Func<IEnumerator> LevelConvertedFromTxt;
+
+    public enum BubbleColor { RED, GREEN, BLUE, RANDOM, VOID }
 
     private void Awake()
     {
+        if (_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(this);
+        }
+        else
+            Destroy(this);
+    }
+
+    private IEnumerator Start()
+    {
         string LEVEL_FILE = $"{Application.dataPath}/Levels/1_level.txt";
+        ConvertLevelFile(LEVEL_FILE);
 
-        charBubbleCodes = new Dictionary<char, Bubble>();
-        bubbleSpawnProbabilities = new Dictionary<Bubble, float>();
-        level = new List<char[]>();
-        startPos = Vector2.zero;
+        yield return new WaitUntil(() => LevelConvertedFromTxt != null);
+        StartCoroutine(LevelConvertedFromTxt.Invoke());
+    }
 
-        reader = new StreamReader(LEVEL_FILE);
+    private void ResetValues()
+    {
+        BubbletypeByCharcode = new Dictionary<char, BubbleColor>();
+        ProbabilityByBubbletype = new Dictionary<BubbleColor, float>();
+        Level = new List<char[]>();
+        StartSpawnPosition = Vector2.zero;
+    }
+
+    private void ConvertLevelFile(string filepath)
+    {
+        ResetValues();
+        reader = new StreamReader(filepath);
 
         while (!reader.EndOfStream)
         {
@@ -60,8 +96,10 @@ public class Converter : MonoBehaviour
                     break;
             }
         }
+
         reader.Close();
     }
+
 
     private void ParseBlock(string blockName, Action<string> InterpretLine)
     {
@@ -79,7 +117,7 @@ public class Converter : MonoBehaviour
     private bool AreProbabilitiesValid()
     {
         float totalChance = 0;
-        foreach (KeyValuePair<Bubble, float> pair in bubbleSpawnProbabilities)
+        foreach (KeyValuePair<BubbleColor, float> pair in ProbabilityByBubbletype)
         {
             totalChance += pair.Value;
         }
@@ -89,12 +127,16 @@ public class Converter : MonoBehaviour
 
     private void InterpretBubbleCodeLine(string line)
     {
-        string[] bubbleTypes = Enum.GetNames(typeof(Bubble));
+        string[] bubbleTypes = Enum.GetNames(typeof(BubbleColor));
         string[] expression = line.Split(' ');
         if (bubbleTypes.Contains(expression[2]))
         {
-            Bubble bubbleEnumByString = (Bubble)Enum.Parse(typeof(Bubble), expression[2]);
-            charBubbleCodes.Add(char.Parse(expression[0]), bubbleEnumByString);
+            BubbleColor bubbleEnumByString = (BubbleColor)Enum.Parse(typeof(BubbleColor), expression[2]);
+            char bubbleCode = char.Parse(expression[0]);
+            if (BubbletypeByCharcode.ContainsKey(bubbleCode))
+                throw new Exception($"There is a duplicate of {bubbleCode} code in bubblecodes block");
+
+            BubbletypeByCharcode.Add(bubbleCode, bubbleEnumByString);
         }
         else
         {
@@ -104,7 +146,7 @@ public class Converter : MonoBehaviour
 
     private void InterpretBubbleSpawnProbability(string line)
     {
-        string[] bubbleTypes = Enum.GetNames(typeof(Bubble));
+        string[] bubbleTypes = Enum.GetNames(typeof(BubbleColor));
 
         string[] expression = line.Split(' ');
         string bubbleType = expression[0];
@@ -112,8 +154,12 @@ public class Converter : MonoBehaviour
 
         if (bubbleTypes.Contains(bubbleType))
         {
-            Bubble bubbleEnumByString = (Bubble)Enum.Parse(typeof(Bubble), bubbleType);
-            bubbleSpawnProbabilities.Add(bubbleEnumByString, Single.Parse(probability, CultureInfo.InvariantCulture));
+            BubbleColor bubbleEnumByString = (BubbleColor)Enum.Parse(typeof(BubbleColor), bubbleType);
+
+            if (ProbabilityByBubbletype.ContainsKey(bubbleEnumByString))
+                throw new Exception($"There is a duplicate of {nameof(bubbleEnumByString)} type in random block");
+
+            ProbabilityByBubbletype.Add(bubbleEnumByString, Single.Parse(probability, CultureInfo.InvariantCulture));
         }
         else
             throw new Exception($"Syntax error. There is no such bubble type as @{bubbleType} in random block");
@@ -127,14 +173,14 @@ public class Converter : MonoBehaviour
         if (isRowHasInvalidBubbleType)
             throw new Exception("There is a non declared bubble type char in 'level' block");
 
-        level.Add(levelRow);
+        Level.Add(levelRow);
     }
 
     private bool CheckRowForNonDeclaredBubbleTypes(char[] levelRow)
     {
         foreach (char c in levelRow)
         {
-            if (!charBubbleCodes.ContainsKey(c))
+            if (!BubbletypeByCharcode.ContainsKey(c))
                 return false;
         }
         return true;
@@ -144,108 +190,16 @@ public class Converter : MonoBehaviour
         string[] expression = line.Split(' ');
 
         if (expression[0] == "x")
-            startPos.x = Single.Parse(expression[2], CultureInfo.InvariantCulture);
+        {
+            float newX = Single.Parse(expression[2], CultureInfo.InvariantCulture);
+            StartSpawnPosition = new Vector2(newX, StartSpawnPosition.y);
+        }
         else if (expression[0] == "y")
-            startPos.y = Single.Parse(expression[2], CultureInfo.InvariantCulture);
+        {
+            float newY = Single.Parse(expression[2], CultureInfo.InvariantCulture);
+            StartSpawnPosition = new Vector2(StartSpawnPosition.x, newY);
+        }
         else
             throw new System.Exception($"Syntax error in startposition block");
-    }
-
-    /*private Dictionary<Bubble, float> ParseProbabilities()
-    {
-        Dictionary<Bubble, float> result = new Dictionary<Bubble, float>();
-        string line = reader.ReadLine();
-        string[] bubbleTypes = Enum.GetNames(typeof(Bubble));
-
-        while (line != "endrandom" && !reader.EndOfStream)
-        {
-            string[] expression = line.Split(' ');
-            string bubbleType = expression[0];
-            string probability = expression[2];
-
-            if (bubbleTypes.Contains(bubbleType))
-            {
-                Bubble bubbleEnumByString = (Bubble)Enum.Parse(typeof(Bubble), bubbleType);
-                result.Add(bubbleEnumByString, float.Parse(probability));
-            }
-        }
-
-        return result;
-    }*/
-
-
-    /*private Dictionary<char, Bubble> ParseBubbleCodes()
-    {
-        Dictionary<char, Bubble> result = new Dictionary<char, Bubble>();
-        string line = reader.ReadLine();
-        string[] bubbleTypes = Enum.GetNames(typeof(Bubble));
-
-        while (line != "endbubblecodes" && !reader.EndOfStream)
-        {
-            string[] expression = line.Split(' ');
-            if (bubbleTypes.Contains(expression[2]))
-            {
-                Bubble bubbleEnumByString = (Bubble)Enum.Parse(typeof(Bubble), expression[2]);
-                result.Add(char.Parse(expression[0]), bubbleEnumByString);
-            }
-            else
-            {
-                throw new Exception($"Syntax error. There is no such bubble type as @{expression[2]}");
-            }
-
-            line = reader.ReadLine();
-        }
-        return result;
-    }*/
-
-    /*private List<char[]> ParseLevel()
-    {
-        string line = reader.ReadLine();
-        List<char[]> level = new List<char[]>();
-        while (line != "endlevel" && !reader.EndOfStream)
-        {
-            if (!Regex.IsMatch(line, ENPTY_LINE_REGEX))
-            {
-                char[] levelRow = line.ToCharArray();
-
-                bool isRowHasInvalidBubbleType = CheckRowForNonDeclaredBubbleTypes(levelRow);
-                if (isRowHasInvalidBubbleType)
-                    throw new Exception("There is a non declared bubble type char in 'level' block");
-
-                level.Add(levelRow);
-            }
-            
-            line = reader.ReadLine();
-        }
-        return level;
-    }*/
-
-    /*private Vector2 ParseStartPosition()
-    {
-        Vector2 startPos = new Vector2();
-
-
-        string line = reader.ReadLine();
-        while (line != "endstartposition" && !reader.EndOfStream)
-        {
-            if (!Regex.IsMatch(line, ENPTY_LINE_REGEX))
-                InterpretStartPositionLine(line, ref startPos);
-            line = reader.ReadLine();
-        }
-
-        return startPos;
-    }*/
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

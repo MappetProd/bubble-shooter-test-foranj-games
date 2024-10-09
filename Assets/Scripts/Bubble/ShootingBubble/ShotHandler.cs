@@ -25,24 +25,23 @@ public class ShotHandler : MonoBehaviour
         //preset.ApplyTo(joint);
         joint.autoConfigureDistance = false;
         joint.distance = 0.005f;
-        joint.dampingRatio = 0;
-        joint.frequency = 1;
+        joint.dampingRatio = 0.8f;
+        joint.frequency = 0.5f;
     }
 
     private void HandleMaxPowerShot(Bubble afftectedBubble)
     {
+        BubbleLevel.Instance.ReplaceBubble(afftectedBubble, bubble);
+
         SpringJoint2D controlledBubbleJoint = gameObject.GetComponent<SpringJoint2D>();
         SpringJoint2D bubbleJoint = afftectedBubble.gameObject.GetComponent<SpringJoint2D>();
         controlledBubbleJoint.connectedAnchor = bubbleJoint.connectedAnchor;
 
         bubble.neighbours = afftectedBubble.neighbours;
-        afftectedBubble.DeclareRemoveToNeighbours();
-
-        BubbleSpawner.instance.AddBubbleToField(bubble);
-        Destroy(afftectedBubble.gameObject);
+        afftectedBubble.Destroy();
     }
 
-    private void HandleCommonShot(Collision2D collision)
+    private void SetPositionNextToCollidedBubble(Collision2D collision)
     {
         SpringJoint2D controlledBubbleJoint = gameObject.GetComponent<SpringJoint2D>();
         
@@ -56,19 +55,22 @@ public class ShotHandler : MonoBehaviour
         
     }
 
-    private IEnumerator DestroySameBubbles(Queue<Bubble> destroyQueue)
+    private IEnumerator HideFirstBubble(Queue<Bubble> destroyQueue)
     {
         yield return new WaitForSeconds(0.2f);
         destroyQueue.Dequeue();
         GetComponent<SpriteRenderer>().enabled = false;
         yield return new WaitForSeconds(0.2f);
+    }
 
+    private void DestroySameBubbles(Queue<Bubble> destroyQueue)
+    {
         while (destroyQueue.Count > 0)
         {
-            Destroy(destroyQueue.Dequeue().gameObject);
-            yield return new WaitForSeconds(0.2f);
+            Bubble bubbleToDestroy = destroyQueue.Dequeue();
+            bubbleToDestroy.Destroy();
+            //yield return new WaitForSeconds(0.2f);
         }
-        Destroy(gameObject);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -81,20 +83,26 @@ public class ShotHandler : MonoBehaviour
             if (playerInput.pullPower == playerInput.maxPullPower)
                 HandleMaxPowerShot(collision.gameObject.GetComponent<Bubble>());
             else
-                HandleCommonShot(collision);
+            {
+                SetPositionNextToCollidedBubble(collision);
+                bubble.InitNeighbours();
+            }
 
             bubble.DeclareToNeighbours();
+
             Queue<Bubble> destroyQueue = new Queue<Bubble>();
-            bubble.GetDestroyQueue(ref destroyQueue, bubble.type);
+
+            HideFirstBubble(destroyQueue);
+            destroyQueue = bubble.GetDestroyQueue(ref destroyQueue, bubble.type);
 
             if (destroyQueue.Count > 2)
             {
-                StartCoroutine(DestroySameBubbles(destroyQueue));
+                //StartCoroutine(DestroySameBubbles(destroyQueue));
+                DestroySameBubbles(destroyQueue);
             }
 
             ShotHandled.Invoke();
             this.enabled = false;
         }
-
     }
 }
