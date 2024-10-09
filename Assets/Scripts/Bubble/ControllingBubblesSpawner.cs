@@ -42,7 +42,7 @@ public class ControllingBubblesSpawner : MonoBehaviour
         Destroy(nextShootingBubble.GetComponent<SpringJoint2D>());
     }
 
-    public GameObject SpawnBubble(Converter.BubbleColor bubbleColor, Vector2 pos)
+    public GameObject SpawnBubble(BubbleColor bubbleColor, Vector2 pos)
     {
         GameObject bubbleObject = Instantiate(shootingBubblePrefab, pos, Quaternion.identity);
         Bubble bubble = bubbleObject.GetComponent<Bubble>();

@@ -33,7 +33,7 @@ public class Shoot : BaseState
         _sm.currShootingBubble.GetComponent<PlayerInput>().enabled = true;
     }
 
-    private GameObject SpawnBubble(Converter.BubbleColor bubbleColor, Vector2 pos)
+    private GameObject SpawnBubble(BubbleColor bubbleColor, Vector2 pos)
     {
         GameObject bubbleObject = GameObject.Instantiate(_sm.shootingBubblePrefab, pos, Quaternion.identity);
         Bubble bubble = bubbleObject.GetComponent<Bubble>();

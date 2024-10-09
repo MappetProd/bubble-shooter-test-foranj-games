@@ -29,32 +29,6 @@ public class ShotHandler : MonoBehaviour
         joint.frequency = 0.5f;
     }
 
-    private void HandleMaxPowerShot(Bubble afftectedBubble)
-    {
-        BubbleLevel.Instance.ReplaceBubble(afftectedBubble, bubble);
-
-        SpringJoint2D controlledBubbleJoint = gameObject.GetComponent<SpringJoint2D>();
-        SpringJoint2D bubbleJoint = afftectedBubble.gameObject.GetComponent<SpringJoint2D>();
-        controlledBubbleJoint.connectedAnchor = bubbleJoint.connectedAnchor;
-
-        bubble.neighbours = afftectedBubble.neighbours;
-        afftectedBubble.Destroy();
-    }
-
-    private void SetPositionNextToCollidedBubble(Collision2D collision)
-    {
-        SpringJoint2D controlledBubbleJoint = gameObject.GetComponent<SpringJoint2D>();
-        
-        ContactPoint2D point = collision.contacts[0];
-        Vector2 hitBubblePos = collision.gameObject.transform.position;
-        
-        if (point.point.y < hitBubblePos.y)
-            controlledBubbleJoint.connectedAnchor = new Vector2(hitBubblePos.x + 0.25f, hitBubblePos.y - 0.5f);
-        else
-            controlledBubbleJoint.connectedAnchor = new Vector2(hitBubblePos.x + 0.5f, hitBubblePos.y);
-        
-    }
-
     private IEnumerator HideFirstBubble(Queue<Bubble> destroyQueue)
     {
         yield return new WaitForSeconds(0.2f);
@@ -68,7 +42,7 @@ public class ShotHandler : MonoBehaviour
         while (destroyQueue.Count > 0)
         {
             Bubble bubbleToDestroy = destroyQueue.Dequeue();
-            bubbleToDestroy.Destroy();
+            BubbleLevel.Instance.RemoveBubble(bubbleToDestroy);
             //yield return new WaitForSeconds(0.2f);
         }
     }
@@ -80,20 +54,16 @@ public class ShotHandler : MonoBehaviour
             hasHit = true;
 
             AddSpringJoint();
-            if (playerInput.pullPower == playerInput.maxPullPower)
-                HandleMaxPowerShot(collision.gameObject.GetComponent<Bubble>());
-            else
-            {
-                SetPositionNextToCollidedBubble(collision);
-                bubble.InitNeighbours();
-            }
+            Bubble collidedBubble = collision.gameObject.GetComponent<Bubble>();
 
-            bubble.DeclareToNeighbours();
+            if (playerInput.pullPower == playerInput.maxPullPower)
+                BubbleLevel.Instance.ReplaceBubble(collidedBubble, this.bubble);
+            else
+                BubbleLevel.Instance.AddBubble(collision, this.bubble);
 
             Queue<Bubble> destroyQueue = new Queue<Bubble>();
-
             HideFirstBubble(destroyQueue);
-            destroyQueue = bubble.GetDestroyQueue(ref destroyQueue, bubble.type);
+            bubble.GetDestroyQueue(ref destroyQueue, bubble.type);
 
             if (destroyQueue.Count > 2)
             {

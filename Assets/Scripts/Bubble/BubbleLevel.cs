@@ -24,11 +24,11 @@ public class BubbleLevel : MonoBehaviour
     private const int DEFAULT_ROWS = 10;
     private const int DEFAULT_COLS = 12;
 
-    private List<List<Bubble>> field;
-
-    private CoreRow coreRow;
+    public LevelReference level;
 
     private Vector2 offset;
+
+    private Converter converter;
 
     public static Action Updated;
 
@@ -42,23 +42,29 @@ public class BubbleLevel : MonoBehaviour
         else
             Destroy(this);
 
-        field = new List<List<Bubble>>();
+        level = new LevelReference();
+        level.reference = new List<List<Bubble>>();
+        level.coreRow = new CoreRow();
+        converter = new Converter();
+
         offset = Vector2.zero;
     }
 
     void Start()
     {
-        Converter.LevelConvertedFromTxt += Make;
+        //Converter.LevelConvertedFromTxt += Make;
         ShotHandler.ShotHandled += OnLevelChanged;
+
+        string LEVEL_FILE = $"{Application.dataPath}/Levels/1_level.txt";
+        ConvertedLevel convertedLevel = converter.ConvertLevelFile(LEVEL_FILE);
+        StartCoroutine(Make(convertedLevel));
     }
 
-    private IEnumerator Make()
+    private IEnumerator Make(ConvertedLevel lvl)
     {
-        transform.position = Converter.Instance.StartSpawnPosition;
-        SpawnBubblesByLevel(Converter.Instance.Level);
-        coreRow = new CoreRow();
-        coreRow.CoreBubbles = field[0];
-        coreRow.startAmount = field[0].Count;
+        transform.position = lvl.startSpawnPosition;
+        SpawnBubblesByLevel(lvl);
+        level.SetCoreRow();
 
         // fix the bug when overlap collider don't return anything
         yield return new WaitForSeconds(0.1f);
@@ -66,10 +72,9 @@ public class BubbleLevel : MonoBehaviour
         InitBubblesNeighbours();
     }
 
-
     private void InitBubblesNeighbours()
     {
-        foreach (List<Bubble> row in field)
+        foreach (List<Bubble> row in level.reference)
         {
             foreach (Bubble bubble in row)
             {
@@ -78,9 +83,9 @@ public class BubbleLevel : MonoBehaviour
         }
     }
 
-    private void SpawnBubblesByLevel(List<char[]> levelmap)
+    private void SpawnBubblesByLevel(ConvertedLevel lvl)
     {
-        foreach (char[] row in levelmap)
+        foreach (char[] row in lvl.charLevelMap)
         {
             List<Bubble> newRow = new List<Bubble>();
             bool isRowOffsetChanging = true;
@@ -91,15 +96,15 @@ public class BubbleLevel : MonoBehaviour
                     offset.x += 0.25f;
                 else if (row[i] == ' ')
                     offset.x += 0.5f;
-                else if (Converter.Instance.BubbletypeByCharcode[row[i]] == Converter.BubbleColor.VOID)
+                else if (lvl.bubbletypeByCharcode[row[i]] == BubbleColor.VOID)
                     continue;
                 else
                 {
                     isRowOffsetChanging = false;
-                    Converter.BubbleColor bubbleColor;
-                    if (Converter.Instance.BubbletypeByCharcode.TryGetValue(row[i], out bubbleColor))
+                    BubbleColor bubbleColor;
+                    if (lvl.bubbletypeByCharcode.TryGetValue(row[i], out bubbleColor))
                     {
-                        if (bubbleColor == Converter.BubbleColor.RANDOM)
+                        if (bubbleColor == BubbleColor.RANDOM)
                             bubbleColor = Bubble.GetRandomColor();
 
                         Bubble spawnedBubble = SpawnBubble(bubbleColor, offset);
@@ -107,13 +112,14 @@ public class BubbleLevel : MonoBehaviour
                     }
                 }
             }
-            field.Add(newRow);
+
+            level.AddRow(newRow);
             offset.y -= 0.5f;
             offset.x = 0f;
         }
     }
 
-    public Bubble SpawnBubble(Converter.BubbleColor bubbleColor, Vector2 pos)
+    public Bubble SpawnBubble(BubbleColor bubbleColor, Vector2 pos)
     {
         GameObject bubbleObject = Instantiate(bubblePrefab, transform);
         Bubble bubble = bubbleObject.GetComponent<Bubble>();
@@ -125,46 +131,42 @@ public class BubbleLevel : MonoBehaviour
 
     public void ReplaceBubble(Bubble destroyedBubble, Bubble newBubble)
     {
-        foreach (List<Bubble> row in field)
-        {
-            int destroyedBubbleIndex = row.FindIndex(bubble => bubble.id == destroyedBubble.id);
-            if (destroyedBubbleIndex == -1)
-                continue;
-            else
-            {
-                row.Remove(destroyedBubble);
-                row.Insert(destroyedBubbleIndex, newBubble);
-                break;
-            }
-        }
-
+        level.Replace(destroyedBubble, newBubble);
+        newBubble.neighbours = destroyedBubble.neighbours;
+        newBubble.DeclareToNeighbours();
+        newBubble.SetSpringJointPositionByBubble(destroyedBubble);
+        RemoveBubble(destroyedBubble);
         newBubble.transform.SetParent(transform);
     }
 
-    public void RemoveBubble(Bubble destroyedBubble)
+    public void AddBubble(Collision2D collision, Bubble newBubble)
     {
-        foreach (List<Bubble> row in field)
-        {
-            bool result = row.Remove(destroyedBubble);
-            if (result)
-                break;
-        }
+        newBubble.SetSpringJointPositionByCollision(collision);
+        newBubble.InitNeighbours();
+        newBubble.DeclareToNeighbours();
     }
-    
+
+    public void RemoveBubble(Bubble bubbleToDestroy)
+    {
+        level.Remove(bubbleToDestroy);
+        bubbleToDestroy.DeclareRemoveToNeighbours();
+        bubbleToDestroy.gameObject.SetActive(false);
+    }
+
     private void OnLevelChanged()
     {
         // Mark not core bubbles
-        coreRow.MarkBubblesThatHaveWayToCore();
+        level.coreRow.MarkBubblesThatHaveWayToCore();
 
         // Destroy all not core bubbles
-        RemoveNotCoreBubbles();
+        List<Bubble> notAttachedToCoreBubbles = level.GetNotAttachedToCoreBubbles();
+        StartCoroutine(RemoveNotCoreBubbles(notAttachedToCoreBubbles));
 
         // check if core row >= 30%;
-        bool isCoreRowDestroyed = coreRow.IsCoreRowDestroyed();
+        bool isCoreRowDestroyed = level.coreRow.IsCoreRowDestroyed();
         //if (isCoreRowDestroyed)
         //GameManager.Instance.GameOver.Invoke();
 
-        // ResetFields()
         ResetBFSFields();
 
         // spawn new shooting bubble
@@ -173,7 +175,7 @@ public class BubbleLevel : MonoBehaviour
 
     private void ResetBFSFields()
     {
-        foreach (List<Bubble> row in field)
+        foreach (List<Bubble> row in level.reference)
         {
             foreach (Bubble bubble in row)
             {
@@ -182,20 +184,12 @@ public class BubbleLevel : MonoBehaviour
         }
     }
 
-    private IEnumerator RemoveNotCoreBubbles()
+    private IEnumerator RemoveNotCoreBubbles(List<Bubble> notAttachedToCoreBubbles)
     {
-        foreach (List<Bubble> row in field)
+        foreach (Bubble bubble in notAttachedToCoreBubbles)
         {
-            foreach (Bubble bubble in row)
-            {
-                if (!bubble.hasWayToCore)
-                {
-                    bubble.DeclareRemoveToNeighbours();
-                    RemoveBubble(bubble);
-                    Destroy(bubble);
-                    yield return new WaitForSeconds(0.1f);
-                }
-            }
+            RemoveBubble(bubble);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 }

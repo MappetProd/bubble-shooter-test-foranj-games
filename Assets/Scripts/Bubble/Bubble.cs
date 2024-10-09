@@ -82,7 +82,7 @@ public class Bubble : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, bubbleRadius);
     }*/
 
-    public Queue<Bubble> GetDestroyQueue(ref Queue<Bubble> destroyQueue, BubbleColor type)
+    public void GetDestroyQueue(ref Queue<Bubble> destroyQueue, BubbleColor type)
     {
         isVisitedDestroyBFS = true;
         if (type == this.type)
@@ -96,8 +96,6 @@ public class Bubble : MonoBehaviour
                 }
             }
         }
-        
-        return destroyQueue;
     }
 
     public void DeclareToNeighbours()
@@ -116,25 +114,30 @@ public class Bubble : MonoBehaviour
         }
     }
 
-    /*public void UpdateCore()
-    {
-        if (!hasWayToCore)
-        {
-            DeclareRemoveToNeighbours();
-            Destroy(gameObject);
-        }
-    }*/
-
     public void ResetBFSFields()
     {
         isVisitedDestroyBFS = false;
         hasWayToCore = false;
     }
 
-    public void Destroy()
+    public void SetSpringJointPositionByBubble(Bubble bubble)
     {
-        BubbleLevel.Instance.RemoveBubble(this);
-        DeclareRemoveToNeighbours();
-        gameObject.SetActive(false);
+        SpringJoint2D controlledBubbleJoint = gameObject.GetComponent<SpringJoint2D>();
+        SpringJoint2D collidedBubbleJoint = bubble.gameObject.GetComponent<SpringJoint2D>();
+        controlledBubbleJoint.connectedAnchor = collidedBubbleJoint.connectedAnchor;
+    }
+
+    public void SetSpringJointPositionByCollision(Collision2D collision)
+    {
+        SpringJoint2D controlledBubbleJoint = gameObject.GetComponent<SpringJoint2D>();
+
+        ContactPoint2D point = collision.contacts[0];
+        Vector2 hitBubblePos = collision.gameObject.transform.position;
+
+        if (point.point.y < hitBubblePos.y)
+            controlledBubbleJoint.connectedAnchor = new Vector2(hitBubblePos.x + 0.25f, hitBubblePos.y - 0.5f);
+        else
+            controlledBubbleJoint.connectedAnchor = new Vector2(hitBubblePos.x + 0.5f, hitBubblePos.y);
+
     }
 }

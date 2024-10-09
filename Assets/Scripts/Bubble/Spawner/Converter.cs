@@ -7,11 +7,11 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-public class Converter : MonoBehaviour
+public class Converter
 {
     const string ENPTY_LINE_REGEX = @"^(?=\s*$)";
 
-    private static Converter _instance;
+    /*private static Converter _instance;
 
     public static Converter Instance
     {
@@ -23,7 +23,7 @@ public class Converter : MonoBehaviour
             }
             return _instance;
         }
-    }
+    }*/
 
     public List<char[]> Level { get; private set; }
     public Dictionary<char, BubbleColor> BubbletypeByCharcode { get; private set; }
@@ -34,9 +34,7 @@ public class Converter : MonoBehaviour
     //public static event Action LevelConvertedFromTxt;
     public static event Func<IEnumerator> LevelConvertedFromTxt;
 
-    public enum BubbleColor { RED, GREEN, BLUE, RANDOM, VOID }
-
-    private void Awake()
+    /*private void Awake()
     {
         if (_instance == null)
         {
@@ -45,16 +43,16 @@ public class Converter : MonoBehaviour
         }
         else
             Destroy(this);
-    }
+    }*/
 
-    private IEnumerator Start()
+    /*private IEnumerator Start()
     {
         string LEVEL_FILE = $"{Application.dataPath}/Levels/1_level.txt";
         ConvertLevelFile(LEVEL_FILE);
 
         yield return new WaitUntil(() => LevelConvertedFromTxt != null);
         StartCoroutine(LevelConvertedFromTxt.Invoke());
-    }
+    }*/
 
     private void ResetValues()
     {
@@ -64,11 +62,12 @@ public class Converter : MonoBehaviour
         StartSpawnPosition = Vector2.zero;
     }
 
-    private void ConvertLevelFile(string filepath)
+    public ConvertedLevel ConvertLevelFile(string filepath)
     {
         ResetValues();
         reader = new StreamReader(filepath);
 
+        ConvertedLevel convertedLevel = new ConvertedLevel();
         while (!reader.EndOfStream)
         {
             string rawBlockName = reader.ReadLine();
@@ -96,8 +95,14 @@ public class Converter : MonoBehaviour
                     break;
             }
         }
+        convertedLevel.charLevelMap = Level;
+        convertedLevel.startSpawnPosition = StartSpawnPosition;
+        convertedLevel.probabilityByBubbletype = ProbabilityByBubbletype;
+        convertedLevel.bubbletypeByCharcode = BubbletypeByCharcode;
 
         reader.Close();
+
+        return convertedLevel;
     }
 
 
