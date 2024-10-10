@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
     public float maxPullPower;
+    public float shotSpreadRatio;
 
     [HideInInspector]
     public Vector2 shotDirection;
@@ -13,7 +15,10 @@ public class PlayerInput : MonoBehaviour
     public float pullPower;
 
     private Vector3 startHoldMousePos;
+    private Vector3 currMousePos;
+    private Vector3 pullVector;
     private bool isHolding;
+
 
     // Update is called once per frame
     void Update()
@@ -22,6 +27,8 @@ public class PlayerInput : MonoBehaviour
         {
             isHolding = true;
 
+            ToggleTrajectoryRendering(true);
+
             startHoldMousePos = Input.mousePosition;
             startHoldMousePos.z = Camera.main.nearClipPlane;
             startHoldMousePos = Camera.main.ScreenToWorldPoint(startHoldMousePos);
@@ -29,18 +36,35 @@ public class PlayerInput : MonoBehaviour
             Debug.Log(startHoldMousePos);
         }
 
-        if (Input.GetMouseButtonUp(0))
+        if (isHolding)
         {
-            Vector3 currMousePos = Input.mousePosition;
+            currMousePos = Input.mousePosition;
             currMousePos.z = Camera.main.nearClipPlane;
             currMousePos = Camera.main.ScreenToWorldPoint(currMousePos);
 
-            shotDirection = -(currMousePos - startHoldMousePos);
+            pullVector = -(currMousePos - startHoldMousePos);
 
-            pullPower = Math.Min((currMousePos - startHoldMousePos).magnitude, maxPullPower);
+            pullPower = (currMousePos - startHoldMousePos).magnitude;
+            pullPower = Math.Min(pullPower, maxPullPower);
 
+            shotDirection = pullVector.normalized;
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            if (pullPower == maxPullPower)
+            {
+                float random = UnityEngine.Random.Range(1 / shotSpreadRatio, shotSpreadRatio);
+                shotDirection *= random;
+            } 
             gameObject.GetComponent<BubbleMovement>().enabled = true;
+            ToggleTrajectoryRendering(false);
             this.enabled = false;
         }
+    }
+
+    private void ToggleTrajectoryRendering(bool value)
+    {
+        GetComponent<TrajectoryRenderer>().enabled = value;
     }
 }

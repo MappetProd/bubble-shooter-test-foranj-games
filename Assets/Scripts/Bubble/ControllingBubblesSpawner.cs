@@ -16,6 +16,7 @@ public class ControllingBubblesSpawner : MonoBehaviour
     {
         SetShootingBubblesPositions();
         SpawnShootingBubbles();
+        ActivateCurrentShootingBubble();
         BubbleLevel.Updated += LoadNewBubbles;
     }
 
@@ -37,9 +38,6 @@ public class ControllingBubblesSpawner : MonoBehaviour
         currShootingBubble = SpawnBubble(Bubble.GetRandomColor(), currShootingBubblePos);
         nextShootingBubble = SpawnBubble(Bubble.GetRandomColor(), nextShootingBubblePos);
         nextShootingBubble.GetComponent<PlayerInput>().enabled = false;
-
-        //TODO: restructure prefabs
-        Destroy(nextShootingBubble.GetComponent<SpringJoint2D>());
     }
 
     public GameObject SpawnBubble(BubbleColor bubbleColor, Vector2 pos)
@@ -51,11 +49,17 @@ public class ControllingBubblesSpawner : MonoBehaviour
         return bubbleObject;
     }
 
+    private void ActivateCurrentShootingBubble()
+    {
+        currShootingBubble.GetComponent<CircleCollider2D>().enabled = true;
+        currShootingBubble.GetComponent<PlayerInput>().enabled = true;
+    }
+
     private void LoadNewBubbles()
     {
         nextShootingBubble.transform.position = currShootingBubblePos;
         currShootingBubble = nextShootingBubble;
-        currShootingBubble.GetComponent<PlayerInput>().enabled = true;
+        ActivateCurrentShootingBubble();
 
         nextShootingBubble = SpawnBubble(Bubble.GetRandomColor(), nextShootingBubblePos);
         nextShootingBubble.GetComponent<PlayerInput>().enabled = false;

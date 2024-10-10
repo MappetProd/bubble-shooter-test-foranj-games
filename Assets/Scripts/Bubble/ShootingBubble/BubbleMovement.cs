@@ -7,9 +7,6 @@ public class BubbleMovement : MonoBehaviour
 {
     [SerializeField]
     private float bubbleSpeed;
-
-    private Vector2 shotDirection;
-    
     private PlayerInput playerInput;
     
     private void Awake()
@@ -23,14 +20,9 @@ public class BubbleMovement : MonoBehaviour
         
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     private void FixedUpdate()
     {
+        //Debug.Log(playerInput.pullPower);
         Vector3 velocity = playerInput.shotDirection * bubbleSpeed * playerInput.pullPower;
         Vector3 displacement = velocity * Time.fixedDeltaTime;
         transform.position += displacement;
