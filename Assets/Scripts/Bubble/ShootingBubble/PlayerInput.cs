@@ -7,7 +7,7 @@ using UnityEngine;
 public class PlayerInput : MonoBehaviour
 {
     public float maxPullPower;
-    public float shotSpreadRatio;
+    public float maxSpreadAngle = 20f;
 
     [HideInInspector]
     public Vector2 shotDirection;
@@ -54,9 +54,10 @@ public class PlayerInput : MonoBehaviour
         {
             if (pullPower == maxPullPower)
             {
-                float random = UnityEngine.Random.Range(1 / shotSpreadRatio, shotSpreadRatio);
-                shotDirection *= random;
+                float randomAngle = UnityEngine.Random.Range(-maxSpreadAngle, maxSpreadAngle);
+                shotDirection = Quaternion.Euler(0f, 0f, randomAngle) * shotDirection;
             } 
+
             gameObject.GetComponent<BubbleMovement>().enabled = true;
             ToggleTrajectoryRendering(false);
             this.enabled = false;

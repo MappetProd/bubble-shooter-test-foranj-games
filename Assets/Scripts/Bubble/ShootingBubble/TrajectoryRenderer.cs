@@ -101,10 +101,9 @@ public class TrajectoryRenderer : MonoBehaviour
     private void DrawRatioLines(Vector2 _shotDirection)
     {
         //Debug.DrawRay(transform.position, _shotDirection, Color.yellow);
-        float angle = 20f;
 
-        Vector2 bottomTrajectoryRangeLine = Quaternion.Euler(0f, 0f, angle) * _shotDirection;
-        Vector2 topTrajectoryRangeLine = Quaternion.Euler(0f, 0f, -angle) * _shotDirection;
+        Vector2 bottomTrajectoryRangeLine = Quaternion.Euler(0f, 0f, input.maxSpreadAngle) * _shotDirection;
+        Vector2 topTrajectoryRangeLine = Quaternion.Euler(0f, 0f, -input.maxSpreadAngle) * _shotDirection;
         bottomTrajectoryRangeLine = bottomTrajectoryRangeLine.normalized;
         topTrajectoryRangeLine = topTrajectoryRangeLine.normalized;
 
@@ -124,10 +123,10 @@ public class TrajectoryRenderer : MonoBehaviour
         if (lr2_lastHit.transform != null)
         {
             vertexes2.Add(lr2_lastHit.point);
-            if (lr2_lastHit.transform.gameObject.CompareTag("Bubble"))
+            /*if (lr2_lastHit.transform.gameObject.CompareTag("Bubble"))
             {
                 
-            }
+            }*/
             /*else if (lr2_lastHit.transform.gameObject.CompareTag("Wall"))
             {
                 bottomTrajectoryRangeLine = Vector2.Reflect(bottomTrajectoryRangeLine, lr1_lastHit.normal);

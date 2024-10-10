@@ -14,12 +14,6 @@ public class BubbleMovement : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     private void FixedUpdate()
     {
         //Debug.Log(playerInput.pullPower);
@@ -27,7 +21,6 @@ public class BubbleMovement : MonoBehaviour
         Vector3 displacement = velocity * Time.fixedDeltaTime;
         transform.position += displacement;
     }
-
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
