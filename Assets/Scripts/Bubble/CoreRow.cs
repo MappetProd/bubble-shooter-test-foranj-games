@@ -20,9 +20,9 @@ public struct CoreRow
     public bool IsCoreRowDestroyed()
     {
         if (CoreBubbles.Count * 100 / startAmount >= 30)
-            return true;
-        else
             return false;
+        else
+            return true;
     }
 
     public void MarkBubblesThatHaveWayToCore()

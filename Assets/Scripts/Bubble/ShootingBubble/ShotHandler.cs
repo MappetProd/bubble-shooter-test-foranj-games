@@ -29,21 +29,30 @@ public class ShotHandler : MonoBehaviour
         joint.frequency = 0.5f;
     }
 
-    private IEnumerator HideFirstBubble(Queue<Bubble> destroyQueue)
+    private IEnumerator HideFirstBubble()
     {
         yield return new WaitForSeconds(0.2f);
-        destroyQueue.Dequeue();
         GetComponent<SpriteRenderer>().enabled = false;
         yield return new WaitForSeconds(0.2f);
     }
 
-    private void DestroySameBubbles(Queue<Bubble> destroyQueue)
+    /*private void DestroySameBubbles(Queue<Bubble> destroyQueue)
     {
         while (destroyQueue.Count > 0)
         {
             Bubble bubbleToDestroy = destroyQueue.Dequeue();
             BubbleLevel.Instance.RemoveBubble(bubbleToDestroy);
             //yield return new WaitForSeconds(0.2f);
+        }
+    }*/
+
+    private IEnumerator DestroySameBubbles(Queue<Bubble> destroyQueue)
+    {
+        while (destroyQueue.Count > 0)
+        {
+            Bubble bubbleToDestroy = destroyQueue.Dequeue();
+            BubbleLevel.Instance.RemoveBubble(bubbleToDestroy);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
@@ -53,26 +62,34 @@ public class ShotHandler : MonoBehaviour
         {
             hasHit = true;
 
-            AddSpringJoint();
-            Bubble collidedBubble = collision.gameObject.GetComponent<Bubble>();
-
-            if (playerInput.pullPower == playerInput.maxPullPower)
-                BubbleLevel.Instance.ReplaceBubble(collidedBubble, this.bubble);
-            else
-                BubbleLevel.Instance.AddBubble(collision, this.bubble);
-
-            Queue<Bubble> destroyQueue = new Queue<Bubble>();
-            HideFirstBubble(destroyQueue);
-            bubble.GetDestroyQueue(ref destroyQueue, bubble.type);
-
-            if (destroyQueue.Count > 2)
-            {
-                //StartCoroutine(DestroySameBubbles(destroyQueue));
-                DestroySameBubbles(destroyQueue);
-            }
-
-            ShotHandled.Invoke();
-            this.enabled = false;
+            StartCoroutine(HandleBubbleCollision(collision));
         }
+    }
+
+    private IEnumerator HandleBubbleCollision(Collision2D collision)
+    {
+        AddSpringJoint();
+        Bubble collidedBubble = collision.gameObject.GetComponent<Bubble>();
+
+        if (playerInput.pullPower == playerInput.maxPullPower)
+        {
+            BubbleLevel.Instance.ReplaceBubble(collidedBubble, this.bubble);
+        }
+        else
+            BubbleLevel.Instance.AddBubble(collision, this.bubble);
+
+        Queue<Bubble> destroyQueue = new Queue<Bubble>();
+        bubble.GetDestroyQueue(ref destroyQueue, bubble.type);
+        destroyQueue.Dequeue();
+
+        if (destroyQueue.Count >= 2)
+        {
+            yield return StartCoroutine(HideFirstBubble());
+            yield return StartCoroutine(DestroySameBubbles(destroyQueue));
+            BubbleLevel.Instance.RemoveBubble(bubble);
+            //DestroySameBubbles(destroyQueue);
+        }
+        ShotHandled.Invoke();
+        //this.enabled = false;
     }
 }

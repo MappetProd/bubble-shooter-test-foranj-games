@@ -167,8 +167,8 @@ public class BubbleLevel : MonoBehaviour
 
         // check if core row >= 30%;
         bool isCoreRowDestroyed = level.coreRow.IsCoreRowDestroyed();
-        //if (isCoreRowDestroyed)
-        //GameManager.Instance.GameOver.Invoke();
+        if (isCoreRowDestroyed)
+            Player.GameOver.Invoke();
 
         ResetBFSFields();
 
