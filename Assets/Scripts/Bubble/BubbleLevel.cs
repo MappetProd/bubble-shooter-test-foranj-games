@@ -18,6 +18,9 @@ public class BubbleLevel : MonoBehaviour
         }
     }
 
+    public int maxTurns = 10;
+    public int scoreToWin = 3200;
+
     [SerializeField]
     private GameObject bubblePrefab;
 
@@ -37,7 +40,6 @@ public class BubbleLevel : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
             Destroy(this);
@@ -150,6 +152,7 @@ public class BubbleLevel : MonoBehaviour
     {
         level.Remove(bubbleToDestroy);
         bubbleToDestroy.DeclareRemoveToNeighbours();
+        Bubble.BubbleDestroyed.Invoke(bubbleToDestroy.points);
         bubbleToDestroy.gameObject.SetActive(false);
     }
 

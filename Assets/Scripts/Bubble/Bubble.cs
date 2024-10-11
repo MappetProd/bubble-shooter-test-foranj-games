@@ -21,7 +21,11 @@ public class Bubble : MonoBehaviour
     [HideInInspector]
     public bool isVisitedDestroyBFS;
 
+    public int points;
+
     private SpriteRenderer sp;
+
+    public static Action<int> BubbleDestroyed;
 
     void Awake()
     {

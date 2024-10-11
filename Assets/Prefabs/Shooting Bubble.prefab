@@ -144,6 +144,7 @@ MonoBehaviour:
   type: 0
   hasWayToCore: 0
   isVisitedDestroyBFS: 0
+  points: 100
 --- !u!114 &-5819566780007472158
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170,7 +171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxPullPower: 1
-  shotSpreadRatio: 1.25
+  maxSpreadAngle: 20
   shotDirection: {x: 0, y: 0}
   pullPower: 0
 --- !u!114 &9059275912617465390

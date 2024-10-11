@@ -161,3 +161,4 @@ MonoBehaviour:
   type: 0
   hasWayToCore: 0
   isVisitedDestroyBFS: 0
+  points: 100
