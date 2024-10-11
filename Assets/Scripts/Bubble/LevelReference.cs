@@ -5,16 +5,16 @@ using UnityEngine;
 
 public struct LevelReference
 {
-    public List<List<Bubble>> reference;
+    public List<Bubble> allBubbles;
 
     public CoreRow coreRow;
 
-    public LevelReference(List<List<Bubble>> ok, CoreRow core)
+    public LevelReference(List<Bubble> allBubbles, CoreRow core)
     {
-        this.reference = ok;
+        this.allBubbles = allBubbles;
         this.coreRow = core;
     }
-    public void Replace(Bubble destroyedBubble, Bubble newBubble)
+    /*public void Replace(Bubble destroyedBubble, Bubble newBubble)
     {
         foreach (List<Bubble> row in reference)
         {
@@ -28,9 +28,22 @@ public struct LevelReference
                 break;
             }
         }
+    }*/
+
+    public void Replace(Bubble destroyedBubble, Bubble newBubble)
+    {
+        int destroyedBubbleIndex = allBubbles.FindIndex(bubble => bubble.id == destroyedBubble.id);
+        allBubbles.Remove(destroyedBubble);
+        allBubbles.Insert(destroyedBubbleIndex, newBubble);
+
+        if (coreRow.CoreBubbles.FindIndex(bubble => bubble.id == destroyedBubble.id) != -1)
+        {
+            allBubbles.Remove(destroyedBubble);
+            allBubbles.Insert(destroyedBubbleIndex, newBubble);
+        }
     }
 
-    public void Remove(Bubble destroyedBubble)
+    /*public void Remove(Bubble destroyedBubble)
     {
         foreach (List<Bubble> row in reference)
         {
@@ -38,20 +51,31 @@ public struct LevelReference
             if (result)
                 break;
         }
+    }*/
+
+    public void Remove(Bubble destroyedBubble)
+    {
+        allBubbles.Remove(destroyedBubble);
+        coreRow.CoreBubbles.Remove(destroyedBubble);
     }
 
-    public void AddRow(List<Bubble> row)
+    /*public void AddRow(List<Bubble> row)
     {
         reference.Add(row);
-    }
+    }*/
 
-    public void SetCoreRow()
+    public void Add(Bubble newBubble)
     {
-        coreRow.CoreBubbles = reference[0];
-        coreRow.startAmount = reference[0].Count;
+        allBubbles.Add(newBubble);
     }
 
-    public List<Bubble> GetNotAttachedToCoreBubbles()
+    public void SetCoreRow(List<Bubble> _coreRow)
+    {
+        coreRow.CoreBubbles = _coreRow;
+        coreRow.startAmount = _coreRow.Count;
+    }
+
+    /*public List<Bubble> GetNotAttachedToCoreBubbles()
     {
         List<Bubble> result = new List<Bubble>();
         foreach (List<Bubble> row in reference)
@@ -63,6 +87,17 @@ public struct LevelReference
                     result.Add(bubble);
                 }
             }
+        }
+        return result;
+    }*/
+
+    public List<Bubble> GetNotAttachedToCoreBubbles()
+    {
+        List<Bubble> result = new List<Bubble>();
+        foreach (Bubble bubble in allBubbles)
+        {
+            if (!bubble.hasWayToCore)
+                result.Add(bubble);
         }
         return result;
     }

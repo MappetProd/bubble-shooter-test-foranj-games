@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BubbleLevel : MonoBehaviour
@@ -45,10 +46,11 @@ public class BubbleLevel : MonoBehaviour
             Destroy(this);
 
         level = new LevelReference();
-        level.reference = new List<List<Bubble>>();
+        level.allBubbles = new List<Bubble>();
         level.coreRow = new CoreRow();
-        converter = new Converter();
+        level.coreRow.CoreBubbles = new List<Bubble>();
 
+        converter = new Converter();
         offset = Vector2.zero;
     }
 
@@ -66,7 +68,7 @@ public class BubbleLevel : MonoBehaviour
     {
         transform.position = lvl.startSpawnPosition;
         SpawnBubblesByLevel(lvl);
-        level.SetCoreRow();
+        level.coreRow.startAmount = level.coreRow.CoreBubbles.Count;
 
         // fix the bug when overlap collider don't return anything
         yield return new WaitForSeconds(0.1f);
@@ -74,7 +76,7 @@ public class BubbleLevel : MonoBehaviour
         InitBubblesNeighbours();
     }
 
-    private void InitBubblesNeighbours()
+    /*private void InitBubblesNeighbours()
     {
         foreach (List<Bubble> row in level.reference)
         {
@@ -83,9 +85,17 @@ public class BubbleLevel : MonoBehaviour
                 bubble.InitNeighbours();
             }
         }
+    }*/
+
+    private void InitBubblesNeighbours()
+    {
+        foreach (Bubble bubble in level.allBubbles)
+        {
+            bubble.InitNeighbours();
+        }
     }
 
-    private void SpawnBubblesByLevel(ConvertedLevel lvl)
+    /*private void SpawnBubblesByLevel(ConvertedLevel lvl)
     {
         foreach (char[] row in lvl.charLevelMap)
         {
@@ -119,6 +129,42 @@ public class BubbleLevel : MonoBehaviour
             offset.y -= 0.5f;
             offset.x = 0f;
         }
+    }*/
+
+    private void SpawnBubblesByLevel(ConvertedLevel lvl)
+    {
+        foreach (char[] row in lvl.charLevelMap)
+        {
+            bool isRowOffsetChanging = true;
+
+            for (int i = 0; i < row.Length; i++)
+            {
+                if (row[i] == ' ' && isRowOffsetChanging)
+                    offset.x += 0.25f;
+                else if (row[i] == ' ')
+                    offset.x += 0.5f;
+                else if (lvl.bubbletypeByCharcode[row[i]] == BubbleColor.VOID)
+                    continue;
+                else
+                {
+                    isRowOffsetChanging = false;
+                    BubbleColor bubbleColor;
+                    if (lvl.bubbletypeByCharcode.TryGetValue(row[i], out bubbleColor))
+                    {
+                        if (bubbleColor == BubbleColor.RANDOM)
+                            bubbleColor = Bubble.GetRandomColor();
+
+                        Bubble spawnedBubble = SpawnBubble(bubbleColor, offset);
+                        level.allBubbles.Add(spawnedBubble);
+                        if (lvl.charLevelMap.First() == row)
+                            level.coreRow.CoreBubbles.Add(spawnedBubble);
+                    }
+                }
+            }
+
+            offset.y -= 0.5f;
+            offset.x = 0f;
+        }
     }
 
     public Bubble SpawnBubble(BubbleColor bubbleColor, Vector2 pos)
@@ -143,6 +189,7 @@ public class BubbleLevel : MonoBehaviour
 
     public void AddBubble(Collision2D collision, Bubble newBubble)
     {
+        level.Add(newBubble);
         newBubble.SetSpringJointPositionByCollision(collision);
         newBubble.InitNeighbours();
         newBubble.DeclareToNeighbours();
@@ -178,12 +225,9 @@ public class BubbleLevel : MonoBehaviour
 
     private void ResetBFSFields()
     {
-        foreach (List<Bubble> row in level.reference)
+        foreach (Bubble bubble in level.allBubbles)
         {
-            foreach (Bubble bubble in row)
-            {
-                bubble.ResetBFSFields();
-            }
+            bubble.ResetBFSFields();
         }
     }
 
