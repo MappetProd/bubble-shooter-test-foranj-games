@@ -418,5 +418,41 @@ PrefabInstance:
       propertyPath: m_Name
       value: MainMenuUI
       objectReference: {fileID: 0}
+    - target: {fileID: 5386805952601505850, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5386805952601505850, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5386805952601505850, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 5386805952810010027, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5386805952908743172, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -20
+      objectReference: {fileID: 0}
+    - target: {fileID: 5386805952951310033, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5386805953586127344, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5386805953586127344, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5386805953586127344, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -100
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3a2d6918c08c0dd438f62ad0c3aee1e3, type: 3}

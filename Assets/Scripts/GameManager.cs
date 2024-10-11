@@ -23,21 +23,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
-
     public void OnNewGameBtnPressed()
     {
-        /*# if UNITY_EDITOR
-        EditorSceneManager.OpenScene("Assets/Scenes/Gameplay.unity");
-        #endif
-
-        #if UNITY_64
-        #endif*/
         SceneManager.LoadScene("Gameplay");
-        //Player player = Player.Instance;
     }
     public void OnAboutGameBtnPressed()
     {
@@ -47,11 +35,5 @@ public class GameManager : MonoBehaviour
     public void OnExitToMenuBtnPressed()
     {
         SceneManager.LoadScene("MainMenu");
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

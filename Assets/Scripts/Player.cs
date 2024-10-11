@@ -64,9 +64,12 @@ public class Player : MonoBehaviour
             GameOver.Invoke();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnDestroy()
     {
-        
-    }
+        Bubble.BubbleDestroyed -= AddScore;
+        ScoreChanged = null;
+        TurnsChanged = null;
+        PassedLevel = null; 
+        GameOver = null;
+}
 }

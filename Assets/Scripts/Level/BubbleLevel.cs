@@ -38,6 +38,7 @@ public class BubbleLevel : MonoBehaviour
 
     private void Awake()
     {
+        Updated = null;
         if (_instance == null)
         {
             _instance = this;
@@ -56,7 +57,6 @@ public class BubbleLevel : MonoBehaviour
 
     void Start()
     {
-        //Converter.LevelConvertedFromTxt += Make;
         ShotHandler.ShotHandled += OnLevelChanged;
 
         string LEVEL_FILE = $"{Application.dataPath}/Levels/1_level.txt";
@@ -76,17 +76,6 @@ public class BubbleLevel : MonoBehaviour
         InitBubblesNeighbours();
     }
 
-    /*private void InitBubblesNeighbours()
-    {
-        foreach (List<Bubble> row in level.reference)
-        {
-            foreach (Bubble bubble in row)
-            {
-                bubble.InitNeighbours();
-            }
-        }
-    }*/
-
     private void InitBubblesNeighbours()
     {
         foreach (Bubble bubble in level.allBubbles)
@@ -94,42 +83,6 @@ public class BubbleLevel : MonoBehaviour
             bubble.InitNeighbours();
         }
     }
-
-    /*private void SpawnBubblesByLevel(ConvertedLevel lvl)
-    {
-        foreach (char[] row in lvl.charLevelMap)
-        {
-            List<Bubble> newRow = new List<Bubble>();
-            bool isRowOffsetChanging = true;
-
-            for (int i = 0; i < row.Length; i++)
-            {
-                if (row[i] == ' ' && isRowOffsetChanging)
-                    offset.x += 0.25f;
-                else if (row[i] == ' ')
-                    offset.x += 0.5f;
-                else if (lvl.bubbletypeByCharcode[row[i]] == BubbleColor.VOID)
-                    continue;
-                else
-                {
-                    isRowOffsetChanging = false;
-                    BubbleColor bubbleColor;
-                    if (lvl.bubbletypeByCharcode.TryGetValue(row[i], out bubbleColor))
-                    {
-                        if (bubbleColor == BubbleColor.RANDOM)
-                            bubbleColor = Bubble.GetRandomColor();
-
-                        Bubble spawnedBubble = SpawnBubble(bubbleColor, offset);
-                        newRow.Add(spawnedBubble);
-                    }
-                }
-            }
-
-            level.AddRow(newRow);
-            offset.y -= 0.5f;
-            offset.x = 0f;
-        }
-    }*/
 
     private void SpawnBubblesByLevel(ConvertedLevel lvl)
     {
@@ -239,5 +192,10 @@ public class BubbleLevel : MonoBehaviour
             RemoveBubble(bubble);
             yield return new WaitForSeconds(0.1f);
         }
+    }
+
+    private void OnDestroy()
+    {
+        ShotHandler.ShotHandled -= OnLevelChanged;
     }
 }

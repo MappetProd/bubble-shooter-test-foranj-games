@@ -11,20 +11,6 @@ public class Converter
 {
     const string ENPTY_LINE_REGEX = @"^(?=\s*$)";
 
-    /*private static Converter _instance;
-
-    public static Converter Instance
-    {
-        get
-        {
-            if ( _instance == null)
-            {
-                _instance = new GameObject("TXTConverter").AddComponent<Converter>();
-            }
-            return _instance;
-        }
-    }*/
-
     public List<char[]> Level { get; private set; }
     public Dictionary<char, BubbleColor> BubbletypeByCharcode { get; private set; }
     public Dictionary<BubbleColor, float> ProbabilityByBubbletype { get; private set; }
@@ -33,26 +19,6 @@ public class Converter
     private StreamReader reader;
     //public static event Action LevelConvertedFromTxt;
     public static event Func<IEnumerator> LevelConvertedFromTxt;
-
-    /*private void Awake()
-    {
-        if (_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(this);
-        }
-        else
-            Destroy(this);
-    }*/
-
-    /*private IEnumerator Start()
-    {
-        string LEVEL_FILE = $"{Application.dataPath}/Levels/1_level.txt";
-        ConvertLevelFile(LEVEL_FILE);
-
-        yield return new WaitUntil(() => LevelConvertedFromTxt != null);
-        StartCoroutine(LevelConvertedFromTxt.Invoke());
-    }*/
 
     private void ResetValues()
     {
@@ -104,7 +70,6 @@ public class Converter
 
         return convertedLevel;
     }
-
 
     private void ParseBlock(string blockName, Action<string> InterpretLine)
     {
