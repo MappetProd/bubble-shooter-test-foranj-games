@@ -189,6 +189,7 @@ public class BubbleLevel : MonoBehaviour
 
     public void AddBubble(Collision2D collision, Bubble newBubble)
     {
+        newBubble.gameObject.tag = "Bubble";
         level.Add(newBubble);
         newBubble.SetSpringJointPositionByCollision(collision);
         newBubble.InitNeighbours();
