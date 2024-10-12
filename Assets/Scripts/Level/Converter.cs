@@ -6,6 +6,7 @@ using System.Linq;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using System.Text;
 
 public class Converter
 {
@@ -28,12 +29,30 @@ public class Converter
         StartSpawnPosition = Vector2.zero;
     }
 
-    public ConvertedLevel ConvertLevelFile(string filepath)
+    public ConvertedLevel ConvertLevelFile(string filename)
     {
         ResetValues();
-        reader = new StreamReader(filepath);
 
         ConvertedLevel convertedLevel = new ConvertedLevel();
+
+        TextAsset textLevel = Resources.Load<TextAsset>(filename);
+        string content = textLevel.text;
+        byte[] byteArray = Encoding.UTF8.GetBytes(content);
+        MemoryStream stream = new MemoryStream(byteArray);
+        reader = new StreamReader(stream);
+
+        ReadTheStream(reader);
+
+        convertedLevel.charLevelMap = Level;
+        convertedLevel.startSpawnPosition = StartSpawnPosition;
+        convertedLevel.probabilityByBubbletype = ProbabilityByBubbletype;
+        convertedLevel.bubbletypeByCharcode = BubbletypeByCharcode;
+
+        return convertedLevel;
+    }
+
+    private void ReadTheStream(StreamReader reader) 
+    {
         while (!reader.EndOfStream)
         {
             string rawBlockName = reader.ReadLine();
@@ -61,14 +80,7 @@ public class Converter
                     break;
             }
         }
-        convertedLevel.charLevelMap = Level;
-        convertedLevel.startSpawnPosition = StartSpawnPosition;
-        convertedLevel.probabilityByBubbletype = ProbabilityByBubbletype;
-        convertedLevel.bubbletypeByCharcode = BubbletypeByCharcode;
-
         reader.Close();
-
-        return convertedLevel;
     }
 
     private void ParseBlock(string blockName, Action<string> InterpretLine)

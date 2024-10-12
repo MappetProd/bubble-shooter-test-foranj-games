@@ -59,6 +59,7 @@ public class Player : MonoBehaviour
     private void SubstractTurn()
     {
         turnsLeft -= 1;
+        Debug.Log($"TURNS Substract: {turnsLeft}");
         TurnsChanged.Invoke(turnsLeft);
         if (turnsLeft == 0)
             GameOver.Invoke();
@@ -67,6 +68,7 @@ public class Player : MonoBehaviour
     private void OnDestroy()
     {
         Bubble.BubbleDestroyed -= AddScore;
+        ShotHandler.ShotHandled -= SubstractTurn;
         ScoreChanged = null;
         TurnsChanged = null;
         PassedLevel = null; 

@@ -1,0 +1,39 @@
+startposition
+
+x = -2.25
+y = 4
+
+endstartposition
+
+bubblecodes 
+
+r = RED
+g = GREEN
+b = BLUE
+x = RANDOM
+- = VOID
+
+endbubblecodes 
+
+random
+
+RED = 0.3
+GREEN = 0.35
+BLUE = 0.35
+
+endrandom
+
+level
+
+x x x x x x
+ x x x x x 
+  x x x x
+ x x x - x
+x x x x x x
+ x x x x x
+  x x x x
+ x x x x x
+x x x x x x
+
+endlevel
+

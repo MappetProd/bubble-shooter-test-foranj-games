@@ -88,12 +88,19 @@ public class Bubble : MonoBehaviour
 
     public void GetDestroyQueue(ref Queue<Bubble> destroyQueue, BubbleColor type)
     {
+        /*Debug.Log($"Recursive check, bubbleType: {type}");
+        Debug.Log($"Recursive check, neighbours: {neighbours}");
+        foreach (Bubble bubble in neighbours)
+        {
+            Debug.Log($"Recursive check, particular neighbour: {bubble}");
+        }*/
         isVisitedDestroyBFS = true;
         if (type == this.type)
         {
             destroyQueue.Enqueue(this);
             foreach (Bubble neighbour in neighbours)
             {
+                if (neighbour == null) continue;
                 if (!neighbour.isVisitedDestroyBFS)
                 {
                     neighbour.GetDestroyQueue(ref destroyQueue, type);
@@ -106,6 +113,7 @@ public class Bubble : MonoBehaviour
     {
         foreach (Bubble neighbour in neighbours)
         {
+            if (neighbour == null) continue;
             neighbour.neighbours.Add(this);
         }
     }
@@ -114,6 +122,7 @@ public class Bubble : MonoBehaviour
     {
         foreach (Bubble neighbour in neighbours)
         {
+            if (neighbour == null) continue;
             neighbour.neighbours.Remove(this);
         }
     }

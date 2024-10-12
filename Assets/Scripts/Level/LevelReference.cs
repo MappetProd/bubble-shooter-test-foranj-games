@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public struct LevelReference
@@ -30,7 +29,7 @@ public struct LevelReference
         }
     }*/
 
-    public void Replace(Bubble destroyedBubble, Bubble newBubble)
+    /*public void Replace(Bubble destroyedBubble, Bubble newBubble)
     {
         int destroyedBubbleIndex = allBubbles.FindIndex(bubble => bubble.id == destroyedBubble.id);
         allBubbles.Remove(destroyedBubble);
@@ -41,7 +40,7 @@ public struct LevelReference
             allBubbles.Remove(destroyedBubble);
             allBubbles.Insert(destroyedBubbleIndex, newBubble);
         }
-    }
+    }*/
 
     /*public void Remove(Bubble destroyedBubble)
     {
@@ -64,9 +63,19 @@ public struct LevelReference
         reference.Add(row);
     }*/
 
+    public bool IsBubbleCore(Bubble bubble)
+    {
+        return coreRow.CoreBubbles.Contains(bubble);
+    }
+
     public void Add(Bubble newBubble)
     {
         allBubbles.Add(newBubble);
+    }
+
+    public void AddCore(Bubble newBubble)
+    {
+        coreRow.CoreBubbles.Add(newBubble);
     }
 
     public void SetCoreRow(List<Bubble> _coreRow)

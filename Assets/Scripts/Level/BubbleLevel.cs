@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -58,8 +59,7 @@ public class BubbleLevel : MonoBehaviour
     void Start()
     {
         ShotHandler.ShotHandled += OnLevelChanged;
-
-        string LEVEL_FILE = $"{Application.dataPath}/Levels/1_level.txt";
+        string LEVEL_FILE = "1_level";
         ConvertedLevel convertedLevel = converter.ConvertLevelFile(LEVEL_FILE);
         StartCoroutine(Make(convertedLevel));
     }
@@ -132,12 +132,23 @@ public class BubbleLevel : MonoBehaviour
 
     public void ReplaceBubble(Bubble destroyedBubble, Bubble newBubble)
     {
-        level.Replace(destroyedBubble, newBubble);
+        /*Debug.Log($"Replace bubble check, destroyed: {destroyedBubble}");
+        Debug.Log($"Replace bubble check, NEW: {newBubble}");
+
+        Debug.Log($"Replace bubble check, _destroyed NEIGHBOURS: {destroyedBubble.neighbours}");
+        Debug.Log($"Replace bubble check, _NEW NEIGHBOURS: {newBubble.neighbours}");*/
+
+        /*destroyedBubble.DeclareRemoveToNeighbours();
         newBubble.neighbours = destroyedBubble.neighbours;
         newBubble.DeclareToNeighbours();
-        newBubble.SetSpringJointPositionByBubble(destroyedBubble);
+        newBubble.SetSpringJointPositionByBubble(destroyedBubble);*/
+
+        /*level.Add(newBubble);
+        if (level.IsBubbleCore(destroyedBubble))
+            level.AddCore(newBubble);*/
+
+        AddBubble(destroyedBubble, newBubble);
         RemoveBubble(destroyedBubble);
-        newBubble.transform.SetParent(transform);
     }
 
     public void AddBubble(Collision2D collision, Bubble newBubble)
@@ -147,6 +158,19 @@ public class BubbleLevel : MonoBehaviour
         newBubble.SetSpringJointPositionByCollision(collision);
         newBubble.InitNeighbours();
         newBubble.DeclareToNeighbours();
+    }
+
+    public void AddBubble(Bubble destroyedBubble, Bubble newBubble)
+    {
+        newBubble.gameObject.tag = "Bubble";
+        level.Add(newBubble);
+        if (level.IsBubbleCore(destroyedBubble))
+            level.AddCore(newBubble);
+
+        newBubble.SetSpringJointPositionByBubble(destroyedBubble);
+        newBubble.neighbours = destroyedBubble.neighbours;
+        newBubble.DeclareToNeighbours();
+        newBubble.transform.SetParent(transform);
     }
 
     public void RemoveBubble(Bubble bubbleToDestroy)
@@ -164,10 +188,18 @@ public class BubbleLevel : MonoBehaviour
 
         // Destroy all not core bubbles
         List<Bubble> notAttachedToCoreBubbles = level.GetNotAttachedToCoreBubbles();
+
+        foreach (Bubble b in notAttachedToCoreBubbles)
+        {
+            Debug.Log($"NOT ATTACHED TO CORE BUBBLE: {b}");
+        }
+
         StartCoroutine(RemoveNotCoreBubbles(notAttachedToCoreBubbles));
 
         // check if core row >= 30%;
         bool isCoreRowDestroyed = level.coreRow.IsCoreRowDestroyed();
+        Debug.Log($"Core row is destroyed?: {isCoreRowDestroyed}");
+        Debug.Log($"Core row is destroyed?: {level.coreRow.CoreBubbles.Count}");
         if (isCoreRowDestroyed)
             Player.GameOver.Invoke();
 

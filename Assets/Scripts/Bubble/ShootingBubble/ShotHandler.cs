@@ -79,6 +79,7 @@ public class ShotHandler : MonoBehaviour
             BubbleLevel.Instance.AddBubble(collision, this.bubble);
 
         Queue<Bubble> destroyQueue = new Queue<Bubble>();
+        Debug.Log(bubble.type);
         bubble.GetDestroyQueue(ref destroyQueue, bubble.type);
         destroyQueue.Dequeue();
 
@@ -89,6 +90,7 @@ public class ShotHandler : MonoBehaviour
             BubbleLevel.Instance.RemoveBubble(bubble);
             //DestroySameBubbles(destroyQueue);
         }
+        Debug.Log("Shot handled fired");
         ShotHandled.Invoke();
         //this.enabled = false;
     }

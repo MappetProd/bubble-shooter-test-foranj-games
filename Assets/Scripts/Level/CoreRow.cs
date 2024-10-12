@@ -12,6 +12,7 @@ public struct CoreRow
         bubble.hasWayToCore = true;
         foreach (Bubble neighbour in bubble.neighbours)
         {
+            if (neighbour == null) continue;
             if (!neighbour.hasWayToCore)
                 MarkNeighboursAsPathToCore(neighbour);
         }
@@ -29,6 +30,7 @@ public struct CoreRow
     {
         foreach (Bubble coreBubble in CoreBubbles)
         {
+            //Debug.Log($"coreBubble: {coreBubble}");
             MarkNeighboursAsPathToCore(coreBubble);
         }
     }
