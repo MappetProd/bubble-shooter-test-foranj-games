@@ -188,7 +188,7 @@ public class BubbleLevel : MonoBehaviour
 
         // Destroy all not core bubbles
         List<Bubble> notAttachedToCoreBubbles = level.GetNotAttachedToCoreBubbles();
-
+        Debug.Log($"NOT ATTACHED TO CORE BUBBLES __COUNT: {notAttachedToCoreBubbles.Count}");
         foreach (Bubble b in notAttachedToCoreBubbles)
         {
             Debug.Log($"NOT ATTACHED TO CORE BUBBLE: {b}");
@@ -198,8 +198,8 @@ public class BubbleLevel : MonoBehaviour
 
         // check if core row >= 30%;
         bool isCoreRowDestroyed = level.coreRow.IsCoreRowDestroyed();
-        Debug.Log($"Core row is destroyed?: {isCoreRowDestroyed}");
-        Debug.Log($"Core row is destroyed?: {level.coreRow.CoreBubbles.Count}");
+        /*Debug.Log($"Core row is destroyed?: {isCoreRowDestroyed}");
+        Debug.Log($"Core row is destroyed?: {level.coreRow.CoreBubbles.Count}");*/
         if (isCoreRowDestroyed)
             Player.GameOver.Invoke();
 

@@ -36,16 +36,6 @@ public class ShotHandler : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
     }
 
-    /*private void DestroySameBubbles(Queue<Bubble> destroyQueue)
-    {
-        while (destroyQueue.Count > 0)
-        {
-            Bubble bubbleToDestroy = destroyQueue.Dequeue();
-            BubbleLevel.Instance.RemoveBubble(bubbleToDestroy);
-            //yield return new WaitForSeconds(0.2f);
-        }
-    }*/
-
     private IEnumerator DestroySameBubbles(Queue<Bubble> destroyQueue)
     {
         while (destroyQueue.Count > 0)
@@ -88,9 +78,8 @@ public class ShotHandler : MonoBehaviour
             yield return StartCoroutine(HideFirstBubble());
             yield return StartCoroutine(DestroySameBubbles(destroyQueue));
             BubbleLevel.Instance.RemoveBubble(bubble);
-            //DestroySameBubbles(destroyQueue);
         }
-        Debug.Log("Shot handled fired");
+        //Debug.Log("Shot handled fired");
         ShotHandled.Invoke();
         //this.enabled = false;
     }
